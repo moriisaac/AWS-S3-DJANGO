@@ -18,5 +18,6 @@ from django.urls import path , include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('storage/', include('s3storage.urls'))
+    # path('admin/doc/', include('django.contrib.admindocs.urls')),
+    path('storage/', include('s3storage.urls')),
 ]

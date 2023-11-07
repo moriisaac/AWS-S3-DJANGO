@@ -1,9 +1,10 @@
 # s3storage/urls.py
 
-from django.urls import path
+from django.urls import path, include
 from .views import S3ListBucket, S3CreateBucket, S3UploadFile, S3DownloadFile, S3DeleteFile, S3DeleteBucket
 
 urlpatterns = [
+    path('admin/doc/', include('django.contrib.admindocs.urls')),
     path('list-buckets/', S3ListBucket.as_view(), name='list-buckets'),
     path('create-bucket/', S3CreateBucket.as_view(), name='create-bucket'),
     path('upload-file/', S3UploadFile.as_view(), name='upload-file'),

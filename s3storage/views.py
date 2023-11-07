@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework import status
 import boto3
 
-from empin.empins2023.settings import AWS_STORAGE_BUCKET_NAME, BASE_DIR
+from empins2023.settings import AWS_STORAGE_BUCKET_NAME, BASE_DIR
 
 
 class S3ListBucket(APIView):
