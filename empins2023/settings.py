@@ -53,9 +53,9 @@ AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME")
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 
 ALLOWED_HOSTS = [
-    "https://api.empinstravelagency.co.ke",
-    "https://bucket.empinstravelagency.co.ke",
-    "https://empinstravelagency.co.ke",
+    "api.empinstravelagency.co.ke",
+    "bucket.empinstravelagency.co.ke",
+    "www.empinstravelagency.co.ke",
     "APP_DOMAIN",
 ]
 
