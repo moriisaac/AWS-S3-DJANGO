@@ -51,12 +51,14 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
 AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME")
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+
 ALLOWED_HOSTS = [
-    "api.empinstravelagency.co.ke",
-    "bucket.empinstravelagency.co.ke",
-    "empinstravelagency.co.ke",
+    "https://api.empinstravelagency.co.ke",
+    "https://bucket.empinstravelagency.co.ke",
+    "https://empinstravelagency.co.ke",
     "APP_DOMAIN",
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
