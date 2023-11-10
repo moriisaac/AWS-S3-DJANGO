@@ -65,7 +65,7 @@ ALLOWED_HOSTS = [
     "bucket.empinstravelagency.co.ke",
     "www.empinstravelagency.co.ke",
     ".ondigitalocean.app",
-    "127.0.0.0.1",
+    "127.0.0.1",
     "localhost"
 ]
 
