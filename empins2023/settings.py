@@ -24,10 +24,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY",get_random_secret_key())
+API_KEY_CUSTOM_HEADER = "HTTP_X_API_KEY"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False") == "True"
-DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
+DEVELOPMENT_MODE = True
 
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework_api_key.permissions.HasAPIKey",
+    ]
+}
 
 
 # Application definition
@@ -43,6 +49,8 @@ INSTALLED_APPS = [
 
     'storages',
     'rest_framework',
+    'rest_framework_api_key',
+
     's3storage',
 ]
 
@@ -59,6 +67,9 @@ ALLOWED_HOSTS = [
     "APP_DOMAIN",
 ]
 
+SIMPLE_API_KEY = {
+    "FERNET_SECRET": os.environ.get("FERNET_SECRET"),
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -93,6 +104,7 @@ WSGI_APPLICATION = 'empins2023.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+
 if DEVELOPMENT_MODE is True:
     DATABASES = {
         "default": {
