@@ -27,7 +27,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY",get_random_secret_key())
 API_KEY_CUSTOM_HEADER = "HTTP_X_API_KEY"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False") == "True"
-DEVELOPMENT_MODE = False
+DEVELOPMENT_MODE = True
 
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
@@ -65,6 +65,8 @@ ALLOWED_HOSTS = [
     "bucket.empinstravelagency.co.ke",
     "www.empinstravelagency.co.ke",
     ".ondigitalocean.app",
+    "127.0.0.0.1",
+    "localhost"
 ]
 
 SIMPLE_API_KEY = {
@@ -81,7 +83,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CSRF_TRUSTED_ORIGINS = ['.ondigitalocean.app','bucket.empinstravelagency.co.ke']
+CSRF_TRUSTED_ORIGINS = ['https://bucket.empinstravelagency.co.ke']
 ROOT_URLCONF = 'empins2023.urls'
 
 TEMPLATES = [
