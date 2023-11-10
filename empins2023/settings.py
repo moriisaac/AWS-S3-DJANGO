@@ -64,7 +64,7 @@ ALLOWED_HOSTS = [
     "api.empinstravelagency.co.ke",
     "bucket.empinstravelagency.co.ke",
     "www.empinstravelagency.co.ke",
-    "APP_DOMAIN",
+    ".ondigitalocean.app",
 ]
 
 SIMPLE_API_KEY = {
@@ -81,6 +81,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CSRF_TRUSTED_ORIGINS = ['.ondigitalocean.app','bucket.empinstravelagency.co.ke']
 ROOT_URLCONF = 'empins2023.urls'
 
 TEMPLATES = [
