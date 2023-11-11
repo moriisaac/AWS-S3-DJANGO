@@ -21,11 +21,11 @@ urlpatterns = [
     path('api/swagger', schema_view.with_ui('swagger', cache_timeout=0),
          name='schema-swagger-ui'),
 
-    path('admin/doc/', include('django.contrib.admindocs.urls')),
-    path('list-buckets/', S3ListBucket.as_view(), name='list-buckets'),
-    path('create-bucket/', S3CreateBucket.as_view(), name='create-bucket'),
-    path('upload-file/', S3UploadFile.as_view(), name='upload-file'),
-    path('download-file/<str:file_name>/', S3DownloadFile.as_view(), name='download-file'),
-    path('delete-file/<str:file_name>/', S3DeleteFile.as_view(), name='delete-file'),
-    path('delete-bucket/<str:bucket_name>/', S3DeleteBucket.as_view(), name='delete-bucket'),
+    # path('admin/doc/', include('django.contrib.admindocs.urls')),
+    path('api/list-buckets/', S3ListBucket.as_view(), name='list-buckets'),
+    path('api/create-bucket/', S3CreateBucket.as_view(), name='create-bucket'),
+    path('api/upload-file/', S3UploadFile.as_view(), name='upload-file'),
+    path('api/download-file/<str:file_name>/', S3DownloadFile.as_view(), name='download-file'),
+    path('api/delete-file/<str:file_name>/', S3DeleteFile.as_view(), name='delete-file'),
+    path('api/delete-bucket/<str:bucket_name>/', S3DeleteBucket.as_view(), name='delete-bucket'),
 ]
