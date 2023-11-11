@@ -6,15 +6,32 @@ import logging
 import os
 from django.http import JsonResponse
 from django.core.files.base import ContentFile
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 
 from rest_framework.response import Response
 from rest_framework import status
 import boto3
-
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.response import Response
+from rest_framework_api_key.permissions import HasAPIKey
 from empins2023.settings import AWS_STORAGE_BUCKET_NAME, BASE_DIR
 
+@swagger_auto_schema(
+    manual_parameters=[
+        openapi.Parameter(
+            name="Authorization",
+            in_=openapi.IN_HEADER,
+            type=openapi.TYPE_STRING,
+            description="API key in the format 'X-Api-Key <your-api-key>'",
+            required=True,
+        ),
+    ],
+)
 
+@authentication_classes(['rest_framework_api_key.authentication.KeypairAuthentication'])
+@permission_classes([HasAPIKey])
 class S3ListBucket(APIView):
     def get(self, request):
         try:
@@ -26,6 +43,8 @@ class S3ListBucket(APIView):
             logging.error(e)
             return Response({'error': 'Failed to list buckets'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@authentication_classes(['rest_framework_api_key.authentication.KeypairAuthentication'])
+@permission_classes([HasAPIKey])
 class S3CreateBucket(APIView):
     def post(self, request):
         bucket_name = request.data.get('bucket_name')
@@ -44,6 +63,8 @@ class S3CreateBucket(APIView):
             logging.error(e)
             return Response({'error': 'Failed to create bucket'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@authentication_classes(['rest_framework_api_key.authentication.KeypairAuthentication'])
+@permission_classes([HasAPIKey])
 class S3UploadFile(APIView):
     def post(self, request):
         file = request.FILES.get('file')
@@ -58,7 +79,8 @@ class S3UploadFile(APIView):
                 return Response({'error': 'Failed to upload file'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
-
+@authentication_classes(['rest_framework_api_key.authentication.KeypairAuthentication'])
+@permission_classes([HasAPIKey])
 class S3DownloadFile(APIView):
     def get(self, request, file_name):
         s3_client = boto3.client('s3')
@@ -70,7 +92,8 @@ class S3DownloadFile(APIView):
         except Exception as e:
             logging.error(e)
             return Response({'error': 'Failed to download file'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+@authentication_classes(['rest_framework_api_key.authentication.KeypairAuthentication'])
+@permission_classes([HasAPIKey])
 class S3DeleteFile(APIView):
     def delete(self, request, file_name):
         s3_client = boto3.client('s3')
@@ -80,7 +103,8 @@ class S3DeleteFile(APIView):
         except Exception as e:
             logging.error(e)
             return Response({'error': 'Failed to delete file'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+@authentication_classes(['rest_framework_api_key.authentication.KeypairAuthentication'])
+@permission_classes([HasAPIKey])
 class S3DeleteBucket(APIView):
     def delete(self, request, bucket_name):
         s3_client = boto3.client('s3')
