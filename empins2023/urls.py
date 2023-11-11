@@ -24,14 +24,18 @@ schema_view = get_schema_view(
         title="AWS-S3 Amazon Storage Bucket API",
         default_version='v1',
         description="Store Your Files Securely using AWS-S3-Django API",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="wesongamori@gmail.com"),
+        license=openapi.License(name="BSD License"),
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
 )
 
 urlpatterns = [
-    path('/', schema_view.with_ui('swagger', cache_timeout=0),
+    path('api/swagger', schema_view.with_ui('swagger', cache_timeout=0),
          name='schema-swagger-ui'),
+    path('/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('admin/', admin.site.urls),
     # path('admin/doc/', include('django.contrib.admindocs.urls')),
     path('storage/', include('s3storage.urls')),
