@@ -2,6 +2,7 @@
 
 from django.urls import path, include
 from .views import S3ListBucket, S3CreateBucket, S3UploadFile, S3DownloadFile, S3DeleteFile, S3DeleteBucket
+# from rest_framework_swagger.views import get_swagger_view
 
 urlpatterns = [
     path('admin/doc/', include('django.contrib.admindocs.urls')),

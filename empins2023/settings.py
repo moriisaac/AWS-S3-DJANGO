@@ -35,7 +35,25 @@ REST_FRAMEWORK = {
     ]
 }
 
-
+# Swagger Documentation
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'DEFAULT_FIELD_INSPECTORS': [
+        'drf_yasg.inspectors.CamelCaseJSONFilter',
+        'drf_yasg.inspectors.InlineSerializerInspector',
+        'drf_yasg.inspectors.RelatedFieldInspector',
+        'drf_yasg.inspectors.ChoiceFieldInspector',
+        'drf_yasg.inspectors.FileFieldInspector',
+        'drf_yasg.inspectors.DictFieldInspector',
+        'drf_yasg.inspectors.SimpleFieldInspector',
+        'drf_yasg.inspectors.StringDefaultFieldInspector',
+    ],
+    'SECURITY_DEFINITIONS': {
+        'Basic': {
+            'type': 'basic'
+        }
+    }
+ }
 # Application definition
 
 INSTALLED_APPS = [
@@ -50,6 +68,8 @@ INSTALLED_APPS = [
     'storages',
     'rest_framework',
     'rest_framework_api_key',
+    'rest_framework_swagger',
+    'drf_yasg',
 
     's3storage',
 ]
