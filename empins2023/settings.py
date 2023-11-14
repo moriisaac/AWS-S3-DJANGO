@@ -109,7 +109,14 @@ CSRF_COOKIE_SECURE = True
 # https://docs.djangoproject.com/en/3.2/ref/settings/#csrf-cookie-samesite
 CSRF_COOKIE_SAMESITE = 'Strict'
 
-CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS.copy()
+CSRF_TRUSTED_ORIGINS = [
+    "https://api.empinstravelagency.co.ke",
+    "https://bucket.empinstravelagency.co.ke",
+    "https://www.empinstravelagency.co.ke",
+    # ".ondigitalocean.app",
+    # "http://127.0.0.1",
+    # "localhost"
+]
 
 ROOT_URLCONF = 'empins2023.urls'
 
