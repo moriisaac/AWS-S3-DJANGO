@@ -67,7 +67,7 @@ INSTALLED_APPS = [
 
     'storages',
     'rest_framework',
-    'rest_framework_api_key',
+    # 'rest_framework_api_key',
     'rest_framework_swagger',
     'drf_yasg',
 
