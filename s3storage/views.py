@@ -43,27 +43,7 @@ from .utils import upload_file
 
 
 
-def upload_file(file: UploadedFile, bucket, object_name=None):
-    """Upload a file to an S3 bucket
 
-    :param file: Django UploadedFile object to upload
-    :param bucket: Bucket to upload to
-    :param object_name: S3 object name. If not specified then file.name is used
-    :return: True if file was uploaded, else False
-    """
-
-    # If S3 object_name was not specified, use file.name
-    if object_name is None:
-        object_name = file.name
-
-    # Upload the file
-    s3_client = boto3.client('s3')
-    try:
-        s3_client.upload_fileobj(file, bucket, object_name)
-    except ClientError as e:
-        logging.error(e)
-        return False
-    return True
 
 class S3ListBucket(APIView):
     def get(self, request):
@@ -116,7 +96,7 @@ class S3UploadFile(APIView):
         file = request.FILES.get('file')
         if file:
             # Specify your S3 bucket name
-            bucket_name = 'your-s3-bucket-name'
+            bucket_name = AWS_STORAGE_BUCKET_NAME
 
             if upload_file(file, bucket_name):
                 return Response({'message': f'File {file.name} uploaded successfully'}, status=status.HTTP_201_CREATED)
