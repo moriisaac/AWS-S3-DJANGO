@@ -18,6 +18,17 @@ from rest_framework.response import Response
 from rest_framework_api_key.permissions import HasAPIKey
 from empins2023.settings import AWS_STORAGE_BUCKET_NAME, BASE_DIR
 
+import logging
+import boto3
+from botocore.exceptions import ClientError
+from django.core.files.uploadedfile import UploadedFile
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.core.files.uploadedfile import UploadedFile
+from .utils import upload_file
+
 @swagger_auto_schema(
     manual_parameters=[
         openapi.Parameter(
@@ -30,6 +41,29 @@ from empins2023.settings import AWS_STORAGE_BUCKET_NAME, BASE_DIR
     ],
 )
 
+
+
+def upload_file(file: UploadedFile, bucket, object_name=None):
+    """Upload a file to an S3 bucket
+
+    :param file: Django UploadedFile object to upload
+    :param bucket: Bucket to upload to
+    :param object_name: S3 object name. If not specified then file.name is used
+    :return: True if file was uploaded, else False
+    """
+
+    # If S3 object_name was not specified, use file.name
+    if object_name is None:
+        object_name = file.name
+
+    # Upload the file
+    s3_client = boto3.client('s3')
+    try:
+        s3_client.upload_fileobj(file, bucket, object_name)
+    except ClientError as e:
+        logging.error(e)
+        return False
+    return True
 
 class S3ListBucket(APIView):
     def get(self, request):
@@ -60,20 +94,37 @@ class S3CreateBucket(APIView):
             logging.error(e)
             return Response({'error': 'Failed to create bucket'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# class S3UploadFile(APIView):
+#     def post(self, request):
+#         File = request.FILES.get('File')
+#         if File:
+#             s3_client = boto3.client('s3')
+#             object_name = File.name
+#             try:
+#                 s3_client.upload_fileobj(File, AWS_STORAGE_BUCKET_NAME, object_name)
+#                 return Response({'message': f'File {object_name} uploaded successfully'}, status=status.HTTP_201_CREATED)
+#             except Exception as e:
+#                 logging.error(e)
+#                 return Response({'error': 'Failed to upload file'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#         else:
+#             return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+ # Import the modified upload_file function
+
 class S3UploadFile(APIView):
     def post(self, request):
-        File = request.FILES.get('File')
-        if File:
-            s3_client = boto3.client('s3')
-            object_name = File.name
-            try:
-                s3_client.upload_fileobj(File, AWS_STORAGE_BUCKET_NAME, object_name)
-                return Response({'message': f'File {object_name} uploaded successfully'}, status=status.HTTP_201_CREATED)
-            except Exception as e:
-                logging.error(e)
+        file = request.FILES.get('file')
+        if file:
+            # Specify your S3 bucket name
+            bucket_name = 'your-s3-bucket-name'
+
+            if upload_file(file, bucket_name):
+                return Response({'message': f'File {file.name} uploaded successfully'}, status=status.HTTP_201_CREATED)
+            else:
                 return Response({'error': 'Failed to upload file'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class S3DownloadFile(APIView):
     def get(self, request, file_name):
