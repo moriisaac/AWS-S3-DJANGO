@@ -62,12 +62,12 @@ class S3CreateBucket(APIView):
 
 class S3UploadFile(APIView):
     def post(self, request):
-        file = request.FILES.get('file')
-        if file:
+        File = request.FILES.get('File')
+        if File:
             s3_client = boto3.client('s3')
-            object_name = file.name
+            object_name = File.name
             try:
-                s3_client.upload_fileobj(file, AWS_STORAGE_BUCKET_NAME, object_name)
+                s3_client.upload_fileobj(File, AWS_STORAGE_BUCKET_NAME, object_name)
                 return Response({'message': f'File {object_name} uploaded successfully'}, status=status.HTTP_201_CREATED)
             except Exception as e:
                 logging.error(e)
