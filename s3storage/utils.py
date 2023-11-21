@@ -26,3 +26,4 @@ def upload_file(file: UploadedFile, bucket, object_name=None):
         logging.error(e)
         return False
     return True
+
