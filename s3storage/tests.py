@@ -59,33 +59,3 @@ class S3ViewsTestCase(TestCase):
         response = self.client.delete('/delete-bucket/testbucket/')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-from django.test import TestCase
-from rest_framework.test import APIClient
-from rest_framework import status
-from django.core.files.uploadedfile import SimpleUploadedFile
-import os
-
-class S3UploadFileTest(TestCase):
-    def setUp(self):
-        # Set up any necessary data or configurations for the test
-        self.client = APIClient()
-        self.file_path = 'C:\\Users\\DELL\\Desktop\\Work\\AWS-S3-DJANGO\\s3storage\\views.py'
-        self.test_file = SimpleUploadedFile('views.py', b'Test file content')
-
-    def test_upload_file_success(self):
-        # Assuming your S3 bucket name is 'your-test-bucket'
-        response = self.client.post('/your-upload-endpoint/', {'file': self.test_file})
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['message'], 'File file.txt uploaded successfully')
-
-    def test_upload_file_failure(self):
-        # Simulate a failure by providing a non-existing file path
-        invalid_file = SimpleUploadedFile('non_existing_file.txt', b'Invalid file content')
-        response = self.client.post('/your-upload-endpoint/', {'file': invalid_file})
-        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
-        self.assertEqual(response.data['error'], 'Failed to upload file')
-
-    def tearDown(self):
-        # Clean up any resources created during the test
-        os.remove(self.file_path)  # Assuming this file is created during testing
-
