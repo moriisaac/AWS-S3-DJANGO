@@ -27,11 +27,6 @@ from .utils import upload_file
         ),
     ],
 )
-
-
-
-
-
 class S3ListBucket(APIView):
     def get(self, request):
         try:
@@ -43,6 +38,7 @@ class S3ListBucket(APIView):
         except Exception as e:
             logging.error(e)
             return Response({'error': 'Failed to list buckets'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class S3CreateBucket(APIView):
     def post(self, request):
@@ -62,6 +58,7 @@ class S3CreateBucket(APIView):
             logging.error(e)
             return Response({'error': 'Failed to create bucket'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 # class S3UploadFile(APIView):
 #     def post(self, request):
 #         File = request.FILES.get('File')
@@ -77,7 +74,7 @@ class S3CreateBucket(APIView):
 #         else:
 #             return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
 
- # Import the modified upload_file function
+# Import the modified upload_file function
 class S3UploadFile(APIView):
     def post(self, request, *args, **kwargs):
         # Replace with your own values or retrieve them from settings
@@ -106,6 +103,7 @@ class S3UploadFile(APIView):
         except Exception as e:
             return Response({'error': f'Failed to upload file to S3: {e}'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 # class S3DownloadFile(APIView):
 #     def get(self, request, file_name):
@@ -185,6 +183,22 @@ class S3DownloadFile(APIView):
             logging.error(e)
             return Response({'error': 'Failed to generate download link'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class S3listFiles(APIView):
+    def get(self,request):
+        try:
+            s3 = boto3.client('s3')
+
+            response = s3.list_buckets()
+            buckets = [bucket['Name'] for bucket in response['Buckets']]
+            files = s3.Bucket(buckets)
+            for file in files.object.all():
+
+                return Response({'Files': file.key}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logging.error(e)
+            return Response({'error': 'Failed to list buckets'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class S3DeleteFile(APIView):
     def delete(self, request, file_name):
         s3_client = boto3.client('s3')
@@ -195,13 +209,14 @@ class S3DeleteFile(APIView):
             logging.error(e)
             return Response({'error': 'Failed to delete file'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 class S3DeleteBucket(APIView):
     def delete(self, request, bucket_name):
         s3_client = boto3.client('s3')
         try:
             s3_client.delete_bucket(Bucket=bucket_name)
-            return Response({'message': f'Bucket {bucket_name} deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'message': f'Bucket {bucket_name} deleted successfully'},
+                            status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             logging.error(e)
             return Response({'error': 'Failed to delete bucket'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
