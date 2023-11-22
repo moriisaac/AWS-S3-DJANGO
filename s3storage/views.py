@@ -76,6 +76,17 @@ class S3CreateBucket(APIView):
 
 # Import the modified upload_file function
 class S3UploadFile(APIView):
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'file': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_BINARY),
+
+            },
+            required=['file']  # Specify required properties
+        ),
+        responses={200: 'OK', 400: 'Bad Request', 500: 'Internal Server Error'}
+    )
     def post(self, request, *args, **kwargs):
         # Replace with your own values or retrieve them from settings
         aws_access_key_id = settings.AWS_ACCESS_KEY_ID
@@ -89,7 +100,9 @@ class S3UploadFile(APIView):
         )
 
         try:
-            folder_name = 'Tours'
+            folder_name = request.GET.get('folder_name', '')
+            if not folder_name:
+                return Response({'error': 'Folder name is required'}, status=status.HTTP_400_BAD_REQUEST)
             for file in request.FILES.getlist('file'):
                 s3_key = f"{folder_name}/{file.name}"
                 s3.upload_fileobj(file, bucket_name, s3_key)
@@ -104,6 +117,42 @@ class S3UploadFile(APIView):
             return Response({'error': f'Failed to upload file to S3: {e}'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class S3CreateFolder(APIView):
+    def post(self, request):
+        try:
+            # Extract folder name from the request data
+            folder_name = request.data.get('folder_name', '')
+            if not folder_name:
+                return Response({'error': 'Folder name is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Use temporary AWS credentials from your IAM role
+            sts_client = boto3.client('sts')
+            assumed_role = sts_client.assume_role(
+                RoleArn=settings.AWS_ROLE_ARN,
+                RoleSessionName='AssumeRoleSession'
+            )
+
+            s3_client = boto3.client(
+                's3',
+                aws_access_key_id=assumed_role['Credentials']['AccessKeyId'],
+                aws_secret_access_key=assumed_role['Credentials']['SecretAccessKey'],
+                aws_session_token=assumed_role['Credentials']['SessionToken']
+            )
+
+            # Specify your S3 bucket name
+            bucket_name = settings.AWS_STORAGE_BUCKET_NAME
+
+            # Ensure the folder name ends with a '/'
+            if not folder_name.endswith('/'):
+                folder_name += '/'
+
+            # Create an empty object with a key representing the folder
+            s3_client.put_object(Bucket=bucket_name, Key=folder_name)
+
+            return Response({'message': f'Folder {folder_name} created successfully'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            logging.error(e)
+            return Response({'error': 'Failed to create folder'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # class S3DownloadFile(APIView):
 #     def get(self, request, file_name):
