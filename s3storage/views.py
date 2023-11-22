@@ -118,6 +118,16 @@ class S3UploadFile(APIView):
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class S3CreateFolder(APIView):
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'folder_name': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+            required=['folder_name']
+        ),
+        responses={201: 'Folder created successfully', 400: 'Bad Request', 500: 'Internal Server Error'}
+    )
     def post(self, request):
         try:
             # Extract folder name from the request data
