@@ -92,12 +92,17 @@ class S3UploadFile(APIView):
         )
 
         try:
-            file = request.FILES['file']
             folder_name = 'Tours'
-            s3_key =  f"{folder_name}/{file.name}"
-            s3.upload_fileobj(file, bucket_name, s3_key)
-            return Response({'message': f'File {file.name} uploaded to {bucket_name}/{s3_key}'},
+            for file in request.FILES.getlist('file'):
+                s3_key = f"{folder_name}/{file.name}"
+                s3.upload_fileobj(file, bucket_name, s3_key)
+
+            return Response({'message': 'Files uploaded successfully'},
                             status=status.HTTP_201_CREATED)
+
+
+
+
         except Exception as e:
             return Response({'error': f'Failed to upload file to S3: {e}'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -151,7 +156,7 @@ class S3UploadFile(APIView):
 class S3DownloadFile(APIView):
     def get(self, request, file_name):
         try:
-            folder_name = 'empins-hub'  # Specify the folder name here
+            folder_name = 'Tours'  # Specify the folder name here
             s3_key = f"{folder_name}/{file_name}"
 
             # Use temporary AWS credentials from your IAM role
