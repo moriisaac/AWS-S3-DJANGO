@@ -183,21 +183,23 @@ class S3DownloadFile(APIView):
             logging.error(e)
             return Response({'error': 'Failed to generate download link'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class S3listFiles(APIView):
-    def get(self,request):
+class S3ListFiles(APIView):
+    def get(self, request):
         try:
+            # Replace 'your-bucket-name' with your actual S3 bucket name
+            bucket_name = settings.AWS_STORAGE_BUCKET_NAME
             s3 = boto3.client('s3')
 
-            response = s3.list_buckets()
-            buckets = [bucket['Name'] for bucket in response['Buckets']]
-            files = s3.Bucket(buckets)
-            for file in files.object.all():
+            # List objects in the specified bucket
+            response = s3.list_objects_v2(Bucket=bucket_name)
 
-                return Response({'Files': file.key}, status=status.HTTP_200_OK)
+            # Extract file keys from the response
+            files = [obj['Key'] for obj in response.get('Contents', [])]
+
+            return Response({'Files': files}, status=status.HTTP_200_OK)
         except Exception as e:
             logging.error(e)
-            return Response({'error': 'Failed to list buckets'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            return Response({'error': 'Failed to list files'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class S3DeleteFile(APIView):
     def delete(self, request, file_name):
