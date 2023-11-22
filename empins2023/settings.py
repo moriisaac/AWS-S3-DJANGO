@@ -14,6 +14,9 @@ import sys
 import dj_database_url
 from pathlib import Path
 from django.core.management.utils import get_random_secret_key
+import dotenv
+dotenv.load_dotenv()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,11 +32,11 @@ API_KEY_CUSTOM_HEADER = "HTTP_X_API_KEY"
 DEBUG = os.getenv("DEBUG", "False") == "True"
 DEVELOPMENT_MODE = True
 
-REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework_api_key.permissions.HasAPIKey",
-    ]
-}
+# REST_FRAMEWORK = {
+#     "DEFAULT_PERMISSION_CLASSES": [
+#         "rest_framework_api_key.permissions.HasAPIKey",
+#     ]
+# }
 
 # Swagger Documentation
 SWAGGER_SETTINGS = {
@@ -67,7 +70,7 @@ INSTALLED_APPS = [
 
     'storages',
     'rest_framework',
-    'rest_framework_api_key',
+    # 'rest_framework_api_key',
     'rest_framework_swagger',
     'drf_yasg',
 
@@ -79,7 +82,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
 AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME")
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
-
+AWS_ROLE_ARN = os.getenv("")
 ALLOWED_HOSTS = [
     "api.empinstravelagency.co.ke",
     "bucket.empinstravelagency.co.ke",
@@ -200,3 +203,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+

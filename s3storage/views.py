@@ -1,33 +1,20 @@
-from django.shortcuts import render
-
 # appname/views.py
 
 import logging
 import os
-from django.http import JsonResponse
-from django.core.files.base import ContentFile
+
+import boto3
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework.parsers import MultiPartParser, FormParser, FileUploadParser
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from rest_framework.response import Response
-from rest_framework import status
-import boto3
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.response import Response
-from rest_framework_api_key.permissions import HasAPIKey
+from empins2023 import settings
 from empins2023.settings import AWS_STORAGE_BUCKET_NAME, BASE_DIR
-
-import logging
-import boto3
-from botocore.exceptions import ClientError
-from django.core.files.uploadedfile import UploadedFile
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.core.files.uploadedfile import UploadedFile
 from .utils import upload_file
+
 
 @swagger_auto_schema(
     manual_parameters=[
@@ -51,6 +38,7 @@ class S3ListBucket(APIView):
             s3 = boto3.client('s3')
             response = s3.list_buckets()
             buckets = [bucket['Name'] for bucket in response['Buckets']]
+
             return Response({'buckets': buckets}, status=status.HTTP_200_OK)
         except Exception as e:
             logging.error(e)
@@ -90,33 +78,107 @@ class S3CreateBucket(APIView):
 #             return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
 
  # Import the modified upload_file function
-
 class S3UploadFile(APIView):
-    def post(self, request):
-        file = request.FILES.get('file')
-        if file:
-            # Specify your S3 bucket name
-            bucket_name = AWS_STORAGE_BUCKET_NAME
+    def post(self, request, *args, **kwargs):
+        # Replace with your own values or retrieve them from settings
+        aws_access_key_id = settings.AWS_ACCESS_KEY_ID
+        aws_secret_access_key = settings.AWS_SECRET_ACCESS_KEY
+        bucket_name = settings.AWS_STORAGE_BUCKET_NAME
 
-            if upload_file(file, bucket_name):
-                return Response({'message': f'File {file.name} uploaded successfully'}, status=status.HTTP_201_CREATED)
-            else:
-                return Response({'error': 'Failed to upload file'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        else:
-            return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key
+        )
 
+        try:
+            file = request.FILES['file']
+            folder_name = 'Tours'
+            s3_key =  f"{folder_name}/{file.name}"
+            s3.upload_fileobj(file, bucket_name, s3_key)
+            return Response({'message': f'File {file.name} uploaded to {bucket_name}/{s3_key}'},
+                            status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': f'Failed to upload file to S3: {e}'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# class S3DownloadFile(APIView):
+#     def get(self, request, file_name):
+#         s3_client = boto3.client('s3')
+#         try:
+#             s3_client.download_file(AWS_STORAGE_BUCKET_NAME, file_name, file_name)
+#             # Provide a download link to the file
+#             file_path = os.path.join(BASE_DIR, file_name)
+#             return Response({'file_path': file_path}, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             logging.error(e)
+#             return Response({'error': 'Failed to download file'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+# class S3DownloadFile(APIView):
+#     def get(self, request, file_name):
+#         s3_client = boto3.client('s3')
+#         try:
+#             folder_name = 'Tours'  # Specify the folder name here
+#             s3_key = f"{folder_name}/{file_name}"
+#
+#             # Specify the local file path where you want to save the downloaded file
+#             local_file_path = os.path.join(BASE_DIR, file_name)
+#
+#             s3_client.download_file(AWS_STORAGE_BUCKET_NAME, s3_key, local_file_path)
+#
+#             # Provide a download link to the file
+#             return Response({'file_path': local_file_path}, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             logging.error(e)
+#             return Response({'error': 'Failed to download file'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+# class S3DownloadFile(APIView):
+#     def get(self, request, file_name):
+#         s3_client = boto3.client('s3')
+#         try:
+#             folder_name = 'Tours'  # Specify the folder name here
+#             s3_key = f"{folder_name}/{file_name}"
+#
+#             # Create a presigned URL for the file
+#             presigned_url = s3_client.generate_presigned_url(
+#                 'get_object',
+#                 Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': s3_key},
+#                 ExpiresIn=3600,  # Set the expiration time for the URL (in seconds)
+#             )
+#
+#             return Response({'download_url': presigned_url}, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             logging.error(e)
+#             return Response({'error': 'Failed to generate download link'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class S3DownloadFile(APIView):
     def get(self, request, file_name):
-        s3_client = boto3.client('s3')
         try:
-            s3_client.download_file(AWS_STORAGE_BUCKET_NAME, file_name, file_name)
-            # Provide a download link to the file
-            file_path = os.path.join(BASE_DIR, file_name)
-            return Response({'file_path': file_path}, status=status.HTTP_200_OK)
+            folder_name = 'empins-hub'  # Specify the folder name here
+            s3_key = f"{folder_name}/{file_name}"
+
+            # Use temporary AWS credentials from your IAM role
+            sts_client = boto3.client('sts')
+            assumed_role = sts_client.assume_role(
+                RoleArn=settings.AWS_ROLE_ARN,
+                RoleSessionName='AssumeRoleSession'
+            )
+
+            s3_client = boto3.client(
+                's3',
+                aws_access_key_id=assumed_role['Credentials']['AccessKeyId'],
+                aws_secret_access_key=assumed_role['Credentials']['SecretAccessKey'],
+                aws_session_token=assumed_role['Credentials']['SessionToken']
+            )
+
+            # Create a presigned URL for the file
+            presigned_url = s3_client.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': s3_key},
+                ExpiresIn=3600  # Set the expiration time for the URL (in seconds)
+            )
+
+            return Response({'download_url': presigned_url}, status=status.HTTP_200_OK)
         except Exception as e:
             logging.error(e)
-            return Response({'error': 'Failed to download file'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': 'Failed to generate download link'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class S3DeleteFile(APIView):
     def delete(self, request, file_name):
