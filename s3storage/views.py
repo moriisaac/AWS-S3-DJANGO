@@ -211,6 +211,13 @@ class S3CreateFolder(APIView):
 #             logging.error(e)
 #             return Response({'error': 'Failed to generate download link'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class S3DownloadFile(APIView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('folder_name', openapi.IN_QUERY, description="Folder name", type=openapi.TYPE_STRING),
+            openapi.Parameter('file_name', openapi.IN_QUERY, description="File name", type=openapi.TYPE_STRING),
+        ],
+        responses={200: 'OK', 400: 'Bad Request', 500: 'Internal Server Error'}
+    )
     def get(self, request):
         try:
             folder_name = request.GET.get('folder_name', '')
