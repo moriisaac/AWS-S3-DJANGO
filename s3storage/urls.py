@@ -14,7 +14,7 @@ urlpatterns = [
     path('api/create-bucket/', S3CreateBucket.as_view(), name='create-bucket'),
     path('api/upload-file/', S3UploadFile.as_view(), name='upload-file'),
     path('api/list-files/',S3ListFiles.as_view(), name='list-files'),
-    path('api/download-file/<str:file_name>/', S3DownloadFile.as_view(), name='download-file'),
+    path('api/download-file/', S3DownloadFile.as_view(), name='download-file'),
     path('api/delete-file/<str:file_name>/', S3DeleteFile.as_view(), name='delete-file'),
     path('api/delete-bucket/<str:bucket_name>/', S3DeleteBucket.as_view(), name='delete-bucket'),
 ]

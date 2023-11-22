@@ -152,8 +152,15 @@ class S3UploadFile(APIView):
 #             logging.error(e)
 #             return Response({'error': 'Failed to generate download link'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class S3DownloadFile(APIView):
-    def get(self, request, folder_name):
+    def get(self, request):
         try:
+            folder_name = request.GET.get('folder_name', '')
+            if not folder_name:
+                return Response({'error': 'Folder name is required'}, status=status.HTTP_400_BAD_REQUEST)
+            # Specify the folder name here
+            file_name = request.GET.get('file_name', '')
+            s3_key = f"{folder_name}/{file_name}"
+
             # Use temporary AWS credentials from your IAM role
             sts_client = boto3.client('sts')
             assumed_role = sts_client.assume_role(
@@ -168,32 +175,18 @@ class S3DownloadFile(APIView):
                 aws_session_token=assumed_role['Credentials']['SessionToken']
             )
 
-            # Specify your S3 bucket name
-            bucket_name = settings.AWS_STORAGE_BUCKET_NAME
-
-            # List objects in the specified folder
-            response = s3_client.list_objects_v2(
-                Bucket=bucket_name,
-                Prefix=f"{folder_name}/"
+            # Create a presigned URL for the file
+            presigned_url = s3_client.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': s3_key},
+                ExpiresIn=3600  # Set the expiration time for the URL (in seconds)
             )
 
-            # Extract file keys from the response
-            file_keys = [obj['Key'] for obj in response.get('Contents', [])]
-
-            # Generate presigned URLs for each file
-            presigned_urls = []
-            for file_key in file_keys:
-                presigned_url = s3_client.generate_presigned_url(
-                    'get_object',
-                    Params={'Bucket': bucket_name, 'Key': file_key},
-                    ExpiresIn=3600  # Set the expiration time for the URL (in seconds)
-                )
-                presigned_urls.append({'file_key': file_key, 'download_url': presigned_url})
-
-            return Response({'download_urls': presigned_urls}, status=status.HTTP_200_OK)
+            return Response({'download_url': presigned_url}, status=status.HTTP_200_OK)
         except Exception as e:
             logging.error(e)
-            return Response({'error': 'Failed to generate download links'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': 'Failed to generate download link'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class S3ListFiles(APIView):
     def get(self, request):
         try:
